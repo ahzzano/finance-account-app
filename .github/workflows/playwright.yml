@@ -31,7 +31,7 @@ jobs:
           cache: maven
       - name: Build backend
         working-directory: backend
-        run: ./mvnw -B -q -DskipTests package
+        run: ./mvnw -B -q verify
       - name: Start backend
         working-directory: backend
         env:
