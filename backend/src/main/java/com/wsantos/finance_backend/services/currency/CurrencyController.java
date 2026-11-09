@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController 
 public class CurrencyController {
-    private final CurrencyRepository repository;
+    private final CurrencyService service;
 
-    CurrencyController(CurrencyRepository repository) {
-        this.repository = repository;
+    CurrencyController(CurrencyService service) {
+        this.service = service;
     }
 
     @GetMapping("/api/currencies")
     public List<Currency> getCurrencies() {
-        return repository.findAll();
+        return service.findAll();
     }
     
     
