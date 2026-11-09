@@ -1,0 +1,7 @@
+# Local dev services. The database is hosted on Supabase, so no Postgres here.
+services:
+  mailpit:
+    image: axllent/mailpit:v1.33.1
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
