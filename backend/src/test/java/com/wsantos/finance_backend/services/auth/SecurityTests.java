@@ -2,7 +2,11 @@ package com.wsantos.finance_backend.services.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
@@ -13,6 +17,9 @@ import jakarta.servlet.http.Cookie;
 
 public class SecurityTests extends IntegrationTests {
     private static final String PASSWORD = "roman-carax-my-beloved";
+
+    @Autowired
+    private Environment environment;
 
     @Test
     void getAuthMeWithoutSessionIsUnauthorized() {
@@ -109,6 +116,12 @@ public class SecurityTests extends IntegrationTests {
 
         assertThat(mvc.delete().uri("/api/does-not-exist").cookie(sessionCookie)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.delete().uri("/api/does-not-exist").cookie(sessionCookie).with(xsrf())).hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void sessionTimeoutDefaultsToSevenDays() {
+        Duration timeout = environment.getProperty("spring.session.timeout", Duration.class);
+        assertThat(timeout).isEqualTo(Duration.ofDays(7));
     }
 
     private Cookie registerAndLogin(String email) {
