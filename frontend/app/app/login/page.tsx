@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthForm } from "@/components/auth-form";
-import { login } from "../../lib/auth";
+import { login, loginSchema } from "../../lib/auth";
 
 export default function LoginPage() {
   return (
@@ -13,6 +13,7 @@ export default function LoginPage() {
       altText="No account?"
       altHref="/app/register"
       altLabel="Create one"
+      schema={loginSchema}
     />
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthForm } from "@/components/auth-form";
-import { register } from "../../lib/auth";
+import { register, registerSchema } from "../../lib/auth";
 
 export default function RegisterPage() {
   return (
@@ -13,7 +13,8 @@ export default function RegisterPage() {
       altText="Already have an account?"
       altHref="/app/login"
       altLabel="Log in"
-      passwordMinLength={8}
+      schema={registerSchema}
+      newPassword
     />
   );
 }

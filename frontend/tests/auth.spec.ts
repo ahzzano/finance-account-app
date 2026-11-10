@@ -71,3 +71,17 @@ test('logout returns to login and protects the dashboard', async ({ page }, test
   await page.goto('/app');
   await expect(page).toHaveURL(/\/app\/login$/);
 });
+
+test('register rejects a short password', async ({ page }, testInfo) => {
+  const email = `user-${Date.now()}-${testInfo.workerIndex}-${testInfo.project.name}@example.com`;
+
+  await page.goto('/app/register');
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password').fill('short');
+  await page.getByRole('button', { name: 'Create account' }).click();
+
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'Password must be at least 8 characters.' })
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/app\/register$/);
+});
