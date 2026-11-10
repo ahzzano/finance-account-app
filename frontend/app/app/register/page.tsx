@@ -1,7 +1,8 @@
 "use client";
 
 import { AuthForm } from "@/components/auth-form";
-import { register, registerSchema } from "../../lib/auth";
+import { register } from "../../lib/auth";
+import { registerSchema } from "../../lib/schema";
 
 export default function RegisterPage() {
   return (

@@ -1,5 +1,3 @@
-import z from "zod";
-
 async function csrfToken(): Promise<string> {
     const read = () => document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/)?.[1];
     let token = read();
@@ -32,21 +30,3 @@ export async function register(email: string, password: string): Promise<void> {
 export async function logout(): Promise<void> {
     await post("/auth/logout", {});
 }
-
-const email = z.email("Enter a valid email address.");
-
-export const loginSchema = z.object({
-    email,
-    password: z.string().min(1, "Enter your password."),
-});
-
-export const registerSchema = z.object({
-    email,
-    password: z
-        .string()
-        .min(8, "Password must be at least 8 characters.")
-        .refine(
-            (p) => new TextEncoder().encode(p).length <= 72,
-            "Password must be at most 72 bytes.",
-        ),
-});

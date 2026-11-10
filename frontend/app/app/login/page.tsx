@@ -1,7 +1,8 @@
 "use client";
 
 import { AuthForm } from "@/components/auth-form";
-import { login, loginSchema } from "../../lib/auth";
+import { login } from "../../lib/auth";
+import { loginSchema } from "../../lib/schema";
 
 export default function LoginPage() {
   return (
