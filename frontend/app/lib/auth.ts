@@ -1,4 +1,4 @@
-async function csrfToken(): Promise<string> {
+export async function csrfToken(): Promise<string> {
     const read = () => document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/)?.[1];
     let token = read();
     // any request through the proxy sets the CSRF cookie, even a 401
