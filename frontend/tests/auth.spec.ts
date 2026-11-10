@@ -53,3 +53,21 @@ test('login with wrong password shows an error', async ({ page }, testInfo) => {
   await expect(page.getByRole('alert').filter({ hasText: 'Invalid email or password.' })).toBeVisible();
   await expect(page).toHaveURL(/\/app\/login$/);
 });
+
+test('logout returns to login and protects the dashboard', async ({ page }, testInfo) => {
+  const email = `user-${Date.now()}-${testInfo.workerIndex}-${testInfo.project.name}@example.com`;
+
+  await page.goto('/app/register');
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password').fill('password123');
+  await page.getByRole('button', { name: 'Create account' }).click();
+
+  await expect(page).toHaveURL(/\/app$/);
+
+  await page.getByRole('button', { name: 'Logout' }).click();
+
+  await expect(page).toHaveURL(/\/app\/login$/);
+
+  await page.goto('/app');
+  await expect(page).toHaveURL(/\/app\/login$/);
+});

@@ -26,3 +26,7 @@ export async function register(email: string, password: string): Promise<void> {
     await post("/auth/register", { email, password });
     await login(email, password);
 }
+
+export async function logout(): Promise<void> {
+    await post("/auth/logout", {});
+}
