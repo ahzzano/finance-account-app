@@ -119,6 +119,35 @@ public class SecurityTests extends IntegrationTests {
     }
 
     @Test
+    void loginRotatesExistingSessionId() {
+        String emailA = "lucy+rotatea@gmail.com";
+        String emailB = "lucy+rotateb@gmail.com";
+        Cookie s1 = registerAndLogin(emailA);
+        assertThat(register(emailB, PASSWORD)).hasStatus(HttpStatus.CREATED);
+
+        MvcTestResult result = mvc.post().uri("/auth/login")
+            .cookie(s1)
+            .with(xsrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(credentialsJson(emailB, PASSWORD))
+            .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+
+        Cookie rotated = result.getResponse().getCookie("SESSION");
+        assertThat(rotated).isNotNull();
+        assertThat(rotated.getValue()).isNotEqualTo(s1.getValue());
+
+        assertThat(mvc.get().uri("/auth/me").cookie(rotated))
+            .hasStatus(HttpStatus.OK)
+            .bodyJson()
+            .extractingPath("$.email")
+            .isEqualTo(emailB);
+
+        assertThat(mvc.get().uri("/auth/me").cookie(s1)).hasStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
     void sessionTimeoutDefaultsToSevenDays() {
         Duration timeout = environment.getProperty("spring.session.timeout", Duration.class);
         assertThat(timeout).isEqualTo(Duration.ofDays(7));

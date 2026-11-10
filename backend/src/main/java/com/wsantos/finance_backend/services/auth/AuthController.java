@@ -55,6 +55,10 @@ public class AuthController {
 
         AppUser user = this.service.loginUser(loginForm);
 
+        // Rotate the session ID to prevent session fixation.
+        request.changeSessionId();
+        log.debug("Rotated session id for user: {}", user.getId());
+
         session.setAttribute("userId", user.getId());
 
         // Populate the security context so Spring Security recognizes this session as authenticated.
