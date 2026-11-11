@@ -51,7 +51,7 @@ public class AuthControllerTests extends IntegrationTests{
     }
 
     @Test
-    void successfulLogout() {
+    void successfulLogout() throws Exception {
         register("talia.yang+logout@gmail.com", "roman-carax-my-beloved");
         MvcTestResult loginResult = login("talia.yang+logout@gmail.com", "roman-carax-my-beloved");
         Cookie sessionCookie = loginResult.getResponse().getCookie("SESSION");
@@ -60,8 +60,72 @@ public class AuthControllerTests extends IntegrationTests{
 
         MvcTestResult result = mvc.post().uri("/auth/logout").with(xsrf()).cookie(sessionCookie).exchange();
 
-        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(result.getResponse().getContentAsString()).isEmpty();
         assertThat(sessionRepository.findById(sessionId)).isNull();
+    }
+
+    @Test
+    void registerResponseExposesOnlyPublicFields() {
+        String email = "talia.yang+publicfields@gmail.com";
+        MvcTestResult result = register(email, "roman-carax-my-beloved");
+
+        assertThat(result)
+            .hasStatus(HttpStatus.CREATED)
+            .bodyJson()
+            .hasPath("$.id")
+            .extractingPath("$.email")
+            .isEqualTo(email);
+
+        assertThat(result)
+            .bodyJson()
+            .extractingPath("$.currencyCode")
+            .isEqualTo("USD");
+
+        assertThat(result)
+            .bodyJson()
+            .doesNotHavePath("$.passwordHash")
+            .doesNotHavePath("$.currency")
+            .doesNotHavePath("$.emailVerifiedAt")
+            .doesNotHavePath("$.createdAt")
+            .doesNotHavePath("$.updatedAt");
+    }
+
+    @Test
+    void loginResponseOmitsPasswordHash() {
+        String email = "talia.yang+loginpublic@gmail.com";
+        assertThat(register(email, "roman-carax-my-beloved")).hasStatus(HttpStatus.CREATED);
+
+        MvcTestResult result = login(email, "roman-carax-my-beloved");
+        assertThat(result)
+            .hasStatus(HttpStatus.OK)
+            .bodyJson()
+            .extractingPath("$.email")
+            .isEqualTo(email);
+
+        assertThat(result)
+            .bodyJson()
+            .doesNotHavePath("$.passwordHash");
+    }
+
+    @Test
+    void meResponseOmitsPasswordHash() {
+        String email = "talia.yang+mepublic@gmail.com";
+        assertThat(register(email, "roman-carax-my-beloved")).hasStatus(HttpStatus.CREATED);
+        MvcTestResult loginResult = login(email, "roman-carax-my-beloved");
+        assertThat(loginResult).hasStatus(HttpStatus.OK);
+        Cookie sessionCookie = loginResult.getResponse().getCookie("SESSION");
+
+        MvcTestResult result = mvc.get().uri("/auth/me").cookie(sessionCookie).exchange();
+        assertThat(result)
+            .hasStatus(HttpStatus.OK)
+            .bodyJson()
+            .extractingPath("$.email")
+            .isEqualTo(email);
+
+        assertThat(result)
+            .bodyJson()
+            .doesNotHavePath("$.passwordHash");
     }
 
     @Test

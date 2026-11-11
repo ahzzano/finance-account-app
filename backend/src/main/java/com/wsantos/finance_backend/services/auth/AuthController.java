@@ -43,13 +43,13 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public AppUser registerUser(@RequestBody @Valid RegistrationForm form) {
-        return this.service.registerUser(form);
+    public UserResponse registerUser(@RequestBody @Valid RegistrationForm form) {
+        return UserResponse.from(this.service.registerUser(form));
     }
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public AppUser loginUser(@RequestBody @Valid LoginForm loginForm, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+    public UserResponse loginUser(@RequestBody @Valid LoginForm loginForm, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 
         AppUser user = this.service.loginUser(loginForm);
 
@@ -66,28 +66,28 @@ public class AuthController {
         SecurityContextHolder.setContext(context);
         this.securityContextRepository.saveContext(context, request, response);
 
-        return user;
+        return UserResponse.from(user);
     }
 
     @PostMapping("/logout")
-    public String logoutUser(HttpSession session) {
-        String sessionId = session.getId();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logoutUser(HttpSession session) {
+        Object userId = session.getAttribute("userId");
         session.invalidate();
         SecurityContextHolder.clearContext();
 
-        log.info("Invalidated session: %s".formatted(sessionId));
-
-        return sessionId;
+        log.info("Logged out user: {}", userId);
     }
 
     // Returns the user tied to the current session, or 401 when no one is logged in.
     @GetMapping("/me")
-    public AppUser getUserProfile(@SessionAttribute(name = "userId", required = false) UUID userId) {
+    public UserResponse getUserProfile(@SessionAttribute(name = "userId", required = false) UUID userId) {
         if (userId == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
         return this.service.getUser(userId)
+            .map(UserResponse::from)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     }
     
