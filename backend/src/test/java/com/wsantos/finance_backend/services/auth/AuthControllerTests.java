@@ -32,6 +32,7 @@ public class AuthControllerTests extends IntegrationTests{
 
         assertThat(user.getEmail()).isEqualTo("talia.yang@gmail.com");
         assertThat(user.getPasswordHash()).isNotEqualTo("roman-carax-my-beloved");
+        assertThat(user.getPasswordHash()).startsWith("{bcrypt}");
         assertThat(user.getCreatedAt()).isNotNull();
         assertThat(user.getCurrency().getCode()).isEqualTo("USD");
 
@@ -197,6 +198,19 @@ public class AuthControllerTests extends IntegrationTests{
     void registrationWithPasswordOver72BytesReturns400() {
         String email = "talia.yang+longpass@gmail.com";
         String password = "é".repeat(37);
+
+        assertThat(register(email, password)).hasStatus(HttpStatus.BAD_REQUEST);
+
+        boolean saved = repository.findAll().stream()
+            .anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
+
+        assertThat(saved).isFalse();
+    }
+
+    @Test
+    void registrationWithShortPasswordReturns400() {
+        String email = "talia.yang+shortpass@gmail.com";
+        String password = "short12";
 
         assertThat(register(email, password)).hasStatus(HttpStatus.BAD_REQUEST);
 
