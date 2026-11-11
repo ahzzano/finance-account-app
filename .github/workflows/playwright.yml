@@ -38,6 +38,7 @@ jobs:
           DB_URL: jdbc:postgresql://localhost:5432/finance
           DB_USERNAME: finance
           DB_PASSWORD: finance
+          SESSION_COOKIE_SECURE: "false"
         run: java -jar target/*.jar > backend.log 2>&1 &
       - name: Wait for backend
         working-directory: backend
