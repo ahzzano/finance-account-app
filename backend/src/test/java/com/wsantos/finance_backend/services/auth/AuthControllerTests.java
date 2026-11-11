@@ -193,6 +193,27 @@ public class AuthControllerTests extends IntegrationTests{
         assertThat(matches).isEqualTo(1);
     }
 
+    @Test
+    void registrationWithPasswordOver72BytesReturns400() {
+        String email = "talia.yang+longpass@gmail.com";
+        String password = "é".repeat(37);
+
+        assertThat(register(email, password)).hasStatus(HttpStatus.BAD_REQUEST);
+
+        boolean saved = repository.findAll().stream()
+            .anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
+
+        assertThat(saved).isFalse();
+    }
+
+    @Test
+    void registrationWithPasswordOf72BytesSucceeds() {
+        String email = "talia.yang+maxpass@gmail.com";
+        String password = "a".repeat(72);
+
+        assertThat(register(email, password)).hasStatus(HttpStatus.CREATED);
+    }
+
     // Spring Session stores the session ID Base64-encoded in the SESSION cookie.
     private String sessionId(Cookie sessionCookie) {
         return new String(Base64.getDecoder().decode(sessionCookie.getValue()));
