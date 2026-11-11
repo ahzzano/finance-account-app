@@ -16,8 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.UUID;
 
-import javax.security.auth.login.LoginException;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -51,7 +49,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public AppUser loginUser(@RequestBody @Valid LoginForm loginForm, HttpSession session, HttpServletRequest request, HttpServletResponse response) throws LoginException {
+    public AppUser loginUser(@RequestBody @Valid LoginForm loginForm, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 
         AppUser user = this.service.loginUser(loginForm);
 

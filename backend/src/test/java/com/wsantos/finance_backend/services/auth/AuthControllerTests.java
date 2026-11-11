@@ -7,6 +7,7 @@ import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
@@ -61,6 +62,71 @@ public class AuthControllerTests extends IntegrationTests{
 
         assertThat(result).hasStatus(HttpStatus.OK);
         assertThat(sessionRepository.findById(sessionId)).isNull();
+    }
+
+    @Test
+    void loginWithWrongPasswordReturns401() {
+        assertThat(register("talia.yang+wrongpass@gmail.com", "roman-carax-my-beloved")).hasStatus(HttpStatus.CREATED);
+
+        assertThat(login("talia.yang+wrongpass@gmail.com", "not-the-right-password"))
+            .hasStatus(HttpStatus.UNAUTHORIZED)
+            .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+            .bodyJson()
+            .extractingPath("$.detail")
+            .isEqualTo("Invalid email or password.");
+    }
+
+    @Test
+    void loginWithUnknownEmailReturns401() {
+        assertThat(login("talia.yang+unknown@gmail.com", "roman-carax-my-beloved"))
+            .hasStatus(HttpStatus.UNAUTHORIZED)
+            .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+            .bodyJson()
+            .extractingPath("$.detail")
+            .isEqualTo("Invalid email or password.");
+    }
+
+    @Test
+    void loginFailuresAreIndistinguishable() {
+        assertThat(register("talia.yang+indistinguishable@gmail.com", "roman-carax-my-beloved")).hasStatus(HttpStatus.CREATED);
+
+        MvcTestResult wrongPassword = login("talia.yang+indistinguishable@gmail.com", "not-the-right-password");
+        MvcTestResult unknownEmail = login("talia.yang+no-such-user@gmail.com", "roman-carax-my-beloved");
+
+        assertThat(wrongPassword.getResponse().getStatus()).isEqualTo(unknownEmail.getResponse().getStatus());
+        assertThat(wrongPassword).bodyJson().extractingPath("$.detail").isEqualTo("Invalid email or password.");
+        assertThat(unknownEmail).bodyJson().extractingPath("$.detail").isEqualTo("Invalid email or password.");
+    }
+
+    @Test
+    void duplicateRegistrationReturns409() {
+        assertThat(register("talia.yang+dupe@gmail.com", "roman-carax-my-beloved")).hasStatus(HttpStatus.CREATED);
+
+        assertThat(register("talia.yang+dupe@gmail.com", "roman-carax-my-beloved"))
+            .hasStatus(HttpStatus.CONFLICT)
+            .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+            .bodyJson()
+            .extractingPath("$.detail")
+            .isEqualTo("Email is already registered.");
+    }
+
+    @Test
+    void duplicateRegistrationIsCaseInsensitive() {
+        assertThat(register("Talia.Yang+Dup@Gmail.com", "roman-carax-my-beloved")).hasStatus(HttpStatus.CREATED);
+
+        assertThat(register("talia.yang+dup@gmail.com", "roman-carax-my-beloved")).hasStatus(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void duplicateRegistrationKeepsOneUser() {
+        register("talia.yang+dupkeep@gmail.com", "roman-carax-my-beloved");
+        register("talia.yang+dupkeep@gmail.com", "roman-carax-my-beloved");
+
+        long matches = repository.findAll().stream()
+            .filter(u -> u.getEmail().equalsIgnoreCase("talia.yang+dupkeep@gmail.com"))
+            .count();
+
+        assertThat(matches).isEqualTo(1);
     }
 
     // Spring Session stores the session ID Base64-encoded in the SESSION cookie.
