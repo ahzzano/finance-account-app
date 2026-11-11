@@ -91,6 +91,30 @@ public class SecurityTests extends IntegrationTests {
     }
 
     @Test
+    void getCsrfAnonymousReturnsRawTokenUsableAsHeader() {
+        String email = "lucy+csrfendpoint@gmail.com";
+        assertThat(register(email, PASSWORD)).hasStatus(HttpStatus.CREATED);
+
+        MvcTestResult csrfResult = mvc.get().uri("/auth/csrf").exchange();
+        assertThat(csrfResult).hasStatus(HttpStatus.OK);
+
+        Cookie xsrfCookie = csrfResult.getResponse().getCookie("XSRF-TOKEN");
+        assertThat(xsrfCookie).isNotNull();
+
+        String token = assertThat(csrfResult).bodyJson().extractingPath("$.token").asString().actual();
+        assertThat(token).isEqualTo(xsrfCookie.getValue());
+
+        MvcTestResult result = mvc.post().uri("/auth/login")
+            .cookie(xsrfCookie)
+            .header("X-XSRF-TOKEN", token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(credentialsJson(email, PASSWORD))
+            .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+    }
+
+    @Test
     void getAuthMeWithSessionReturnsUser() {
         String email = "lucy+me@gmail.com";
         Cookie sessionCookie = registerAndLogin(email);

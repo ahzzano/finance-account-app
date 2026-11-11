@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.DeferredCsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -77,6 +79,13 @@ public class AuthController {
         SecurityContextHolder.clearContext();
 
         log.info("Logged out user: {}", userId);
+    }
+
+    // Returns the raw CSRF token so clients don't have to read the XSRF-TOKEN cookie.
+    @GetMapping("/csrf")
+    public Map<String, String> csrf(HttpServletRequest request) {
+        DeferredCsrfToken deferred = (DeferredCsrfToken) request.getAttribute(DeferredCsrfToken.class.getName());
+        return Map.of("token", deferred.get().getToken());
     }
 
     // Returns the user tied to the current session, or 401 when no one is logged in.

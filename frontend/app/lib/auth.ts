@@ -1,12 +1,10 @@
 export async function csrfToken(): Promise<string> {
-    const read = () => document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/)?.[1];
-    let token = read();
-    // any request through the proxy sets the CSRF cookie, even a 401
-    if (!token) {
-        await fetch("/auth/me");
-        token = read();
-    }
-    return token ? decodeURIComponent(token) : "";
+    const cookie = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/)?.[1];
+    if (cookie) return decodeURIComponent(cookie);
+    // WebKit may not expose a cookie set by fetch to document.cookie yet, so take the token from the body
+    const res = await fetch("/auth/csrf");
+    if (!res.ok) throw new Error(`/auth/csrf failed: ${res.status}`);
+    return ((await res.json()) as { token: string }).token;
 }
 
 async function post(path: string, body: unknown): Promise<void> {

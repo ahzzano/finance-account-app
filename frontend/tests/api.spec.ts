@@ -22,7 +22,7 @@ test('sends the CSRF header', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByText('USD - US Dollar')).toBeVisible();
-  // XSRF-TOKEN cookie is set by the real backend via /auth/me
+  // XSRF-TOKEN cookie is set by the real backend via /auth/csrf
   const cookie = (await page.context().cookies()).find((c) => c.name === 'XSRF-TOKEN');
   expect(token).toBe(decodeURIComponent(cookie!.value));
 });

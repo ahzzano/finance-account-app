@@ -48,6 +48,7 @@ public class SecurityConfig {
             .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login", "/auth/logout").permitAll()
+                .requestMatchers(HttpMethod.GET, "/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/currencies").permitAll()
                 .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll()
                 .anyRequest().authenticated())
