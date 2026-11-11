@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
         source: "/api/:path*",
         destination: `${process.env.BACKEND_URL}/api/:path*`,
       },
+      {
+        source: "/auth/:path*",
+        destination: `${process.env.BACKEND_URL}/auth/:path*`,
+      },
     ];
   },
   turbopack: {

@@ -3,12 +3,14 @@ package com.wsantos.finance_backend;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Import(ProblemDetailTests.FailingController.class)
+@WithMockUser
 class ProblemDetailTests extends IntegrationTests {
 
     @RestController
