@@ -56,6 +56,12 @@ public class AccountController {
         this.service.delete(ownerId, id);
     }
 
+    @PostMapping("/{id}/balances")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AccountResponse addBalance(@SessionAttribute(name = "userId") UUID ownerId, @PathVariable UUID id, @RequestBody @Valid CreateBalanceRequest request) {
+        return this.service.addBalance(ownerId, id, request);
+    }
+
     @PutMapping("/{id}/balances/{currency}")
     public AccountResponse setBalance(@SessionAttribute(name = "userId") UUID ownerId, @PathVariable UUID id, @PathVariable String currency, @RequestBody @Valid BalanceRequest request) {
         return this.service.setBalance(ownerId, id, currency, request);
