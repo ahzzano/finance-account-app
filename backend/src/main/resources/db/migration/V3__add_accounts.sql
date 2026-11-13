@@ -4,6 +4,8 @@ CREATE TABLE accounts (
     name  TEXT NOT NULL
 );
 
+CREATE UNIQUE INDEX accounts_owner_name_unique ON accounts (owner, lower(name));
+
 CREATE TABLE account_balances (
     account_id UUID          NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     currency   CHAR(3)       NOT NULL REFERENCES currency(code),

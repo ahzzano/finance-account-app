@@ -10,4 +10,6 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     List<Account> findByOwnerOrderByName(UUID owner);
 
     Optional<Account> findByIdAndOwner(UUID id, UUID owner);
+
+    boolean existsByOwnerAndNameIgnoreCase(UUID owner, String name);
 }
