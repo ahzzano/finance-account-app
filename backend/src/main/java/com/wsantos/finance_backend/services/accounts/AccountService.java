@@ -51,7 +51,7 @@ public class AccountService {
     // Creates a new account for the user with no balances.
     @Transactional
     public AccountResponse create(UUID owner, AccountRequest req) {
-        if (this.accountRepository.existsByOwnerAndNameIgnoreCase(owner, req.name())) {
+        if (this.accountRepository.existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(owner, req.name())) {
             throw new AccountNameTaken();
         }
 
@@ -78,7 +78,7 @@ public class AccountService {
     public AccountResponse rename(UUID owner, UUID id, AccountRequest req) {
         Account account = this.findOwnedAccount(owner, id);
         if (!req.name().equalsIgnoreCase(account.getName())
-            && this.accountRepository.existsByOwnerAndNameIgnoreCase(owner, req.name())) {
+            && this.accountRepository.existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(owner, req.name())) {
             throw new AccountNameTaken();
         }
 

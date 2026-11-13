@@ -11,5 +11,5 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 
     Optional<Account> findByIdAndOwner(UUID id, UUID owner);
 
-    boolean existsByOwnerAndNameIgnoreCase(UUID owner, String name);
+    boolean existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(UUID owner, String name);
 }

@@ -1,5 +1,6 @@
 package com.wsantos.finance_backend.services.accounts.domain;
 
+import java.time.Instant;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
@@ -29,6 +30,9 @@ public class AccountBalance {
 
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
+
+    @Column(name = "archived_at")
+    private Instant archivedAt;
 
     /** Updates the stored balance amount. */
     public void setAmount(BigDecimal amount) {

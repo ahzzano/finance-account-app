@@ -67,7 +67,7 @@ class AccountServiceTest {
     void createStoresOwnerAndName() {
         ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
         Account saved = ownedAccount();
-        when(accountRepository.existsByOwnerAndNameIgnoreCase(owner, "Checking")).thenReturn(false);
+        when(accountRepository.existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(owner, "Checking")).thenReturn(false);
         when(accountRepository.saveAndFlush(any())).thenReturn(saved);
 
         AccountResponse response = accountService.create(owner, new AccountRequest("Checking"));
@@ -80,7 +80,7 @@ class AccountServiceTest {
 
     @Test
     void createThrowsAccountNameTakenWhenNameExists() {
-        when(accountRepository.existsByOwnerAndNameIgnoreCase(owner, "Checking")).thenReturn(true);
+        when(accountRepository.existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(owner, "Checking")).thenReturn(true);
 
         assertThatThrownBy(() -> accountService.create(owner, new AccountRequest("Checking")))
             .isInstanceOf(AccountNameTaken.class);
@@ -89,7 +89,7 @@ class AccountServiceTest {
 
     @Test
     void createThrowsAccountNameTakenOnDataIntegrityViolation() {
-        when(accountRepository.existsByOwnerAndNameIgnoreCase(owner, "Checking")).thenReturn(false);
+        when(accountRepository.existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(owner, "Checking")).thenReturn(false);
         when(accountRepository.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("duplicate"));
 
         assertThatThrownBy(() -> accountService.create(owner, new AccountRequest("Checking")))
@@ -116,7 +116,7 @@ class AccountServiceTest {
     void renameThrowsAccountNameTakenWhenAnotherAccountHasName() {
         Account account = ownedAccount();
         when(accountRepository.findByIdAndOwner(accountId, owner)).thenReturn(Optional.of(account));
-        when(accountRepository.existsByOwnerAndNameIgnoreCase(owner, "Savings")).thenReturn(true);
+        when(accountRepository.existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(owner, "Savings")).thenReturn(true);
 
         assertThatThrownBy(() -> accountService.rename(owner, accountId, new AccountRequest("Savings")))
             .isInstanceOf(AccountNameTaken.class);
@@ -127,7 +127,7 @@ class AccountServiceTest {
     void renameThrowsAccountNameTakenOnDataIntegrityViolation() {
         Account account = ownedAccount();
         when(accountRepository.findByIdAndOwner(accountId, owner)).thenReturn(Optional.of(account));
-        when(accountRepository.existsByOwnerAndNameIgnoreCase(owner, "Savings")).thenReturn(false);
+        when(accountRepository.existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(owner, "Savings")).thenReturn(false);
         when(accountRepository.saveAndFlush(account)).thenThrow(new DataIntegrityViolationException("duplicate"));
 
         assertThatThrownBy(() -> accountService.rename(owner, accountId, new AccountRequest("Savings")))
@@ -143,7 +143,7 @@ class AccountServiceTest {
         AccountResponse response = accountService.rename(owner, accountId, new AccountRequest("Checking"));
 
         assertThat(response.name()).isEqualTo("Checking");
-        verify(accountRepository, never()).existsByOwnerAndNameIgnoreCase(any(), any());
+        verify(accountRepository, never()).existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(any(), any());
     }
 
     @Test
@@ -155,7 +155,7 @@ class AccountServiceTest {
         AccountResponse response = accountService.rename(owner, accountId, new AccountRequest("CHECKING"));
 
         assertThat(response.name()).isEqualTo("CHECKING");
-        verify(accountRepository, never()).existsByOwnerAndNameIgnoreCase(any(), any());
+        verify(accountRepository, never()).existsByOwnerAndNameIgnoreCaseAndArchivedAtIsNull(any(), any());
     }
 
     @Test
